@@ -9,6 +9,8 @@ class Profile extends StatelessWidget {
     // Move the user initialization inside the build method
     final User? user = FirebaseAuth.instance.currentUser;
 
+    
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 2, 33, 59),

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:diatom/components/buttons.dart';
 import 'package:diatom/pages/login_page.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,16 @@ class _SignUpPageState extends State<SignUpPage> {
   final bioController = TextEditingController();
   String errorMessage = '';
 
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    usernameController.dispose();
+    phoneController.dispose();
+    bioController.dispose();
+    super.dispose();
+  }
+
   Future<void> registerUser() async {
     setState(() {
       errorMessage = ''; // Reset error message
@@ -32,13 +43,11 @@ class _SignUpPageState extends State<SignUpPage> {
       builder: (context) {
         return const Center(
           child: SpinKitSpinningLines(
-            color: Colors.red, // You can customize the color if needed
-            size: 100.0, // You can customize the size if needed
-            lineWidth: 2.0, // You can customize the line width if needed
-            itemCount: 7, // You can customize the number of lines if needed
-            duration: Duration(
-                milliseconds:
-                    10000), // You can customize the duration if needed
+            color: Colors.red,
+            size: 100.0,
+            lineWidth: 2.0,
+            itemCount: 7,
+            duration: Duration(milliseconds: 10000),
           ),
         );
       },
@@ -48,6 +57,13 @@ class _SignUpPageState extends State<SignUpPage> {
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
+      );
+
+      addUserDetails(
+        usernameController.text.trim(),
+        emailController.text.trim(),
+        phoneController.text.trim(),
+        bioController.text.trim(),
       );
 
       // Additional user details
@@ -68,6 +84,16 @@ class _SignUpPageState extends State<SignUpPage> {
         errorMessage = e.message ?? 'An error occurred';
       });
     }
+  }
+
+  Future addUserDetails(
+      String username, String email, String phone, String bio) async {
+    await FirebaseFirestore.instance.collection('Users').add({
+      'Username': username,
+      'Email': email,
+      'Phone': phone,
+      'Bio': bio,
+    });
   }
 
   @override
@@ -164,9 +190,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SquareTile(imagePath: 'lib/images/google.png'),
+                    SquareTile(imagePath: 'assets/images/google.png'),
                     SizedBox(width: 10),
-                    SquareTile(imagePath: 'lib/images/apple.png'),
                   ],
                 ),
                 const SizedBox(height: 25.0),
