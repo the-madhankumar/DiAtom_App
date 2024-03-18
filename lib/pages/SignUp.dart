@@ -3,6 +3,7 @@ import 'package:diatom/components/buttons.dart';
 import 'package:diatom/pages/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:diatom/components/square_tile.dart';
 import 'package:diatom/components/textfield.dart';
@@ -21,6 +22,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final usernameController = TextEditingController();
   final phoneController = TextEditingController();
   final bioController = TextEditingController();
+  var firebaseUser = FirebaseAuth.instance.currentUser;
   String errorMessage = '';
 
   @override
@@ -54,12 +56,17 @@ class _SignUpPageState extends State<SignUpPage> {
     );
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      // UserCredential variable declaration
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
       );
 
+      String documentId = userCredential.user!.uid;
+
       addUserDetails(
+        documentId,
         usernameController.text.trim(),
         emailController.text.trim(),
         phoneController.text.trim(),
@@ -86,13 +93,14 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
-  Future addUserDetails(
-      String username, String email, String phone, String bio) async {
-    await FirebaseFirestore.instance.collection('Users').add({
+  Future<void> addUserDetails(String documentId, String username, String email,
+      String phone, String bio) async {
+    await FirebaseFirestore.instance.collection('Users').doc(documentId).set({
       'Username': username,
       'Email': email,
       'Phone': phone,
       'Bio': bio,
+      "uid": documentId,
     });
   }
 
@@ -144,10 +152,26 @@ class _SignUpPageState extends State<SignUpPage> {
                   obscureText: false,
                 ),
                 const SizedBox(height: 15),
-                textfield(
-                  controller: bioController,
-                  hintText: "Bio",
-                  obscureText: false,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25),
+                  child: TextField(
+                    controller: bioController,
+                    maxLines: null,
+                    decoration: InputDecoration(
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white10),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Color.fromRGBO(189, 189, 189, 1)),
+                      ),
+                      fillColor: const Color.fromRGBO(238, 238, 238, 1),
+                      filled: true,
+                      hintText: 'Bio',
+                      hintStyle: TextStyle(color: Colors.grey[400]),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 15),
                 buttons(onTap: registerUser),
